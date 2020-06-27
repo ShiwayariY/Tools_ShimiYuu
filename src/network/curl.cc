@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <map>
 
 #include <network/curl.hh>
 
@@ -7,6 +8,8 @@ namespace shimiyuu::network {
 Curl::Curl() {
 	Global::init();
 	m_handle = curl_easy_init();
+	curl_easy_setopt(m_handle, CURLOPT_COOKIEFILE, "");
+	curl_easy_setopt(m_handle, CURLOPT_FOLLOWLOCATION, 1L);
 }
 
 Curl::~Curl() {
@@ -26,8 +29,21 @@ std::string Curl::get_string(const std::string& url) const {
 	curl_easy_setopt(m_handle, CURLOPT_WRITEDATA, &buf);
 	curl_easy_setopt(m_handle, CURLOPT_WRITEFUNCTION, write_string);
 	curl_easy_setopt(m_handle, CURLOPT_URL, url.c_str());
-	if (curl_easy_perform(m_handle))
-		throw std::runtime_error("failed GET");
+	if (curl_easy_perform(m_handle)) throw std::runtime_error("failed GET");
+	return buf;
+}
+
+std::string Curl::post(const std::string& url, const std::map<std::string, std::string>& data) const {
+	std::string post_data, buf;
+	for (const auto& [key, val] : data)
+		post_data += (post_data.empty() ? "" : "&") + key + "=" + val;
+	curl_easy_setopt(m_handle, CURLOPT_POSTFIELDS, post_data.c_str());
+	curl_easy_setopt(m_handle, CURLOPT_WRITEDATA, &buf);
+	curl_easy_setopt(m_handle, CURLOPT_WRITEFUNCTION, write_string);
+	curl_easy_setopt(m_handle, CURLOPT_URL, url.c_str());
+	const bool error = curl_easy_perform(m_handle);
+	curl_easy_setopt(m_handle, CURLOPT_HTTPGET, 1L);
+	if (error) throw std::runtime_error("failed POST");
 	return buf;
 }
 
@@ -35,9 +51,20 @@ void Curl::write(const std::string& url, std::ostream& os) const {
 	curl_easy_setopt(m_handle, CURLOPT_WRITEDATA, &os);
 	curl_easy_setopt(m_handle, CURLOPT_WRITEFUNCTION, write_to_stream);
 	curl_easy_setopt(m_handle, CURLOPT_URL, url.c_str());
+	if (curl_easy_perform(m_handle)) throw std::runtime_error("failed GET");
+}
 
-	if (curl_easy_perform(m_handle))
-		throw std::runtime_error("failed GET");
+std::vector<std::string> Curl::get_cookies() const {
+	std::vector<std::string> cookies_v;
+	struct curl_slist* cookies = NULL;
+	if (!curl_easy_getinfo(m_handle, CURLINFO_COOKIELIST, &cookies)) {
+		struct curl_slist* remaining_cookies = cookies;
+		while (remaining_cookies) {
+			cookies_v.push_back(remaining_cookies->data);
+			remaining_cookies = remaining_cookies->next;
+		}
+	}
+	return cookies_v;
 }
 
 void Curl::Global::init() {
