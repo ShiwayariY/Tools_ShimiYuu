@@ -19,7 +19,7 @@ fi
 if [ "${1,,}" == "build" ]; then
 	cmake "${cmake_defines[@]}" ..
 elif [ "$1" == "clear" ]; then
-	rm -rf ../build/* ../bin/*
+	rm -rf ../build/* ../bin/* ../lib/*
 elif [ "$1" == "clean" ]; then
 	make clean
 	rm -rf ../bin/*
