@@ -17,6 +17,7 @@ fi
 (cd build
 
 if [ "${1,,}" == "build" ]; then
+	rm -rf ../build/*
 	cmake "${cmake_defines[@]}" ..
 elif [ "$1" == "clear" ]; then
 	rm -rf ../build/* ../bin/* ../lib/*
