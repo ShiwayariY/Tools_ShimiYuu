@@ -59,7 +59,7 @@ public:
 
 	public:
 		template<typename ... ColumnNames,
-				typename = std::enable_if_t<std::conjunction_v<std::is_convertible<ColumnNames, std::string> ...> >
+				typename = std::enable_if_t<std::conjunction_v<std::is_constructible<std::string, ColumnNames> ...> >
 		> UniqueComposite(const ColumnNames& ... columns) :
 				columns { columns ... } {
 			if (this->columns.size() < 2) throw std::runtime_error("invalid unique constraints");
@@ -88,11 +88,12 @@ public:
 	std::enable_if_t<std::conjunction_v<
 			std::is_same<UniqueCompositeT, UniqueComposite> ...>
 	> create(std::string_view table_name, const std::vector<Column>& columns,
-			UniqueCompositeT ... unique_sets) {
+			const UniqueCompositeT& ... unique_sets) {
 		std::string constraint_clauses;
-		concat_list(constraint_clauses, { unique_sets ... });
+		concat_list(constraint_clauses, std::vector<UniqueComposite> { unique_sets ... });
 		create_with_constraints(table_name, columns, constraint_clauses);
 	}
+
 	void insert(std::string_view table_name,
 			const std::vector<std::string_view>& columns,
 			const std::vector<std::string_view>& data);
