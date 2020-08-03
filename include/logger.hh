@@ -35,25 +35,28 @@ template<typename LogLevelT>
 class SYLogger {
 	std::map<LogLevelT, std::pair<bool, std::ostream*> > m_logs;
 	const LogLevelT* m_level;
-	SYLoggerRelay m_relay;
 
 public:
 	SYLogger(const LogLevelT& level, std::ostream& log) :
 			m_logs { { level, { true, &log } } },
-			m_level(&m_logs.begin()->first), m_relay(nullptr) {
+			m_level(&m_logs.begin()->first) {
 	}
 
 	/**
-	 * @return a stream object correspoding to the given level
+	 * @return	a stream object correspoding to the given level.
+	 * 			The returned stream does not write anything if the level is not configured,
+	 * 			is disabled, or is less than the current log level. Otherwise, output is written
+	 * 			to the stream associated to level.
 	 */
-	SYLoggerRelay& operator()(const LogLevelT& level) {
+	SYLoggerRelay operator()(const LogLevelT& level) {
 		std::ostream* log = nullptr;
 		if (level >= *m_level) {
-			const auto& [enabled, level_log] = m_logs.at(level);
-			if (enabled) log = level_log;
+			if (const auto it = m_logs.find(level); it != m_logs.end()) {
+				const auto& [enabled, level_log] = it->second;
+				if (enabled) log = level_log;
+			}
 		}
-		m_relay = SYLoggerRelay(log);
-		return m_relay;
+		return SYLoggerRelay(log);
 	}
 
 	/** set the log level of the logger
@@ -86,11 +89,10 @@ public:
 	 */
 	bool enabled(const LogLevelT& level) {
 		if (const auto it = m_logs.find(level); it != m_logs.end())
-			return it->second->first;
+			return it->second.first;
 		else
 			return false;
 	}
-	//TODO enable, disable logs / check if a log is enabled ...
 
 	/**
 	 * enable or disable a log level
@@ -98,7 +100,7 @@ public:
 	 */
 	bool enabled(const LogLevelT& level, bool enable) {
 		if (auto it = m_logs.find(level); it != m_logs.end()) {
-			it->second->first = enable;
+			it->second.first = enable;
 			return true;
 		} else
 			return false;

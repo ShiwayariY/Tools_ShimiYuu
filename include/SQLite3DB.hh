@@ -1,7 +1,10 @@
 #include <string_view>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <memory>
+
+#include <logger.hh>
 
 #include <sqlite3.h>
 
@@ -9,6 +12,8 @@
 #define INCLUDE_SHIMIYUU_SQLITE3DB_HH_
 
 namespace shimiyuu {
+
+extern SYLogger<int> sqlite3db_logger;
 
 class SQLite3DB {
 

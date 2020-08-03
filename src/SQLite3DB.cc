@@ -1,10 +1,13 @@
 #include <stdexcept>
+#include <iostream>
 
 #include <sqlite3.h>
 
 #include <SQLite3DB.hh>
 
 namespace shimiyuu {
+
+SYLogger<int> sqlite3db_logger(1, std::cout);
 
 SQLite3DB::SQLite3DB(const std::string& database_file) {
 	sqlite3* db;
@@ -31,7 +34,7 @@ SQLite3DB::Column::operator std::string() const {
 	sql += name + " " + to_sql(data_type)
 		+ (key_type == KeyType::PRIMARY ? " PRIMARY KEY" : "")
 		+ (allow_null ? " NOT NULL" : "")
-		+ (unique ? " UNIQUE" : "")
+		+ (unique && key_type != KeyType::PRIMARY ? " UNIQUE" : "")
 		+ (key_type == KeyType::FOREIGN ? ", FOREIGN KEY(" + name + ") REFERENCES "
 			+ foreign_key_table + "("
 			+ (foreign_key_name.empty() ? name : foreign_key_name) + ") ON DELETE CASCADE" : "");
@@ -112,6 +115,7 @@ std::string SQLite3DB::to_sql(DataType data_type) {
 }
 
 void SQLite3DB::exec(const std::string& sql) {
+	sqlite3db_logger(0) << "exec(\"" << sql << "\") ...\n";
 	if (char* sql_err = nullptr; sqlite3_exec(m_db.get(), sql.c_str(), nullptr, nullptr, &sql_err) != SQLITE_OK) {
 		const std::string err_msg(sql_err);
 		sqlite3_free(sql_err);
