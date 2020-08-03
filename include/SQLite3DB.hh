@@ -54,15 +54,23 @@ public:
 		operator std::string() const;
 	};
 
-	class UniqueComposite {
+	class ConstraintComposite {
 		const std::vector<std::string> columns;
+		KeyType key_type = KeyType::NONE;
 
 	public:
 		template<typename ... ColumnNames,
 				typename = std::enable_if_t<std::conjunction_v<std::is_constructible<std::string, ColumnNames> ...> >
-		> UniqueComposite(const ColumnNames& ... columns) :
+		> ConstraintComposite(const ColumnNames& ... columns) :
 				columns { columns ... } {
 			if (this->columns.size() < 2) throw std::runtime_error("invalid unique constraints");
+		}
+
+		template<typename ... ColumnNames,
+				typename = std::enable_if_t<std::conjunction_v<std::is_constructible<std::string, ColumnNames> ...> >
+		> ConstraintComposite(KeyType key_type, const ColumnNames& ... columns) :
+				ConstraintComposite(columns ...) {
+			this->key_type = key_type;
 		}
 
 		operator std::string() const;
@@ -84,13 +92,13 @@ private:
 public:
 	SQLite3DB(const std::filesystem::path& database_file);
 
-	template<typename ... UniqueCompositeT>
+	template<typename ... ConstraintCompositeT>
 	std::enable_if_t<std::conjunction_v<
-			std::is_same<UniqueCompositeT, UniqueComposite> ...>
+			std::is_same<ConstraintCompositeT, ConstraintComposite> ...>
 	> create(std::string_view table_name, const std::vector<Column>& columns,
-			const UniqueCompositeT& ... unique_sets) {
+			const ConstraintCompositeT& ... unique_sets) {
 		std::string constraint_clauses;
-		concat_list(constraint_clauses, std::vector<UniqueComposite> { unique_sets ... });
+		concat_list(constraint_clauses, std::vector<ConstraintComposite> { unique_sets ... });
 		create_with_constraints(table_name, columns, constraint_clauses);
 	}
 

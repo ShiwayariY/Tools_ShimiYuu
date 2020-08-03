@@ -36,9 +36,20 @@ SQLite3DB::Column::operator std::string() const {
 	return sql;
 }
 
-SQLite3DB::UniqueComposite::operator std::string() const {
+SQLite3DB::ConstraintComposite::operator std::string() const {
 	std::string sql;
-	sql += ", UNIQUE(";
+	sql += ", ";
+	switch (key_type) {
+		case KeyType::NONE:
+			sql += "UNIQUE";
+			break;
+		case KeyType::PRIMARY:
+			sql += "PRIMARY KEY";
+			break;
+		default:
+			throw std::runtime_error("invalid key constraint");
+	}
+	sql += "(";
 	concat_list(sql, columns);
 	sql += ")";
 	return sql;
