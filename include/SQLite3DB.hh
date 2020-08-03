@@ -1,7 +1,7 @@
 #include <string_view>
 #include <string>
-#include <filesystem>
 #include <vector>
+#include <memory>
 
 #include <sqlite3.h>
 
@@ -90,7 +90,7 @@ private:
 			std::string_view constraint_clauses);
 
 public:
-	SQLite3DB(const std::filesystem::path& database_file);
+	SQLite3DB(const std::string& database_file);
 
 	template<typename ... ConstraintCompositeT>
 	std::enable_if_t<std::conjunction_v<

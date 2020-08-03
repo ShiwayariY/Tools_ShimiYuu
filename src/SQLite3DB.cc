@@ -1,12 +1,14 @@
+#include <stdexcept>
+
 #include <sqlite3.h>
 
 #include <SQLite3DB.hh>
 
 namespace shimiyuu {
 
-SQLite3DB::SQLite3DB(const std::filesystem::path& database_file) {
+SQLite3DB::SQLite3DB(const std::string& database_file) {
 	sqlite3* db;
-	if (sqlite3_open(database_file.string().c_str(), &db))
+	if (sqlite3_open(database_file.c_str(), &db))
 		throw std::runtime_error(sqlite3_errmsg(db));
 	m_db.reset(db);
 
