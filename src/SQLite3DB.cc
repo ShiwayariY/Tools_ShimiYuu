@@ -115,7 +115,7 @@ std::string SQLite3DB::to_sql(DataType data_type) {
 }
 
 void SQLite3DB::exec(const std::string& sql) {
-	sqlite3db_logger(0) << "exec(\"" << sql << "\") ...\n";
+	sqlite3db_logger(0) << "exec(\"" << sql << "\") ..." << std::endl;
 	if (char* sql_err = nullptr; sqlite3_exec(m_db.get(), sql.c_str(), nullptr, nullptr, &sql_err) != SQLITE_OK) {
 		const std::string err_msg(sql_err);
 		sqlite3_free(sql_err);
