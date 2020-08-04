@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 
+#include <helper.hh>
+
 #include <logger.hh>
 
 #include <sqlite3.h>
@@ -17,21 +19,6 @@ extern SYLogger<int> sqlite3db_logger;
 
 class SQLite3DB {
 
-	template<typename ListItem>
-	static std::enable_if_t<std::is_constructible_v<std::string, ListItem> > concat_list(
-			std::string& concat_to, const std::vector<ListItem>& list,
-			std::string delim = ",", const std::string before_item = "", const std::string after_item = "") {
-		bool print_delim = false;
-		concat_to += before_item;
-		delim = after_item + delim + before_item;
-		for (const auto& val : list) {
-			if (print_delim) concat_to += delim;
-			concat_to += val;
-			print_delim = true;
-		}
-		concat_to += after_item;
-	}
-
 public:
 
 	enum class DataType {
@@ -42,6 +29,8 @@ public:
 	};
 
 	class Column {
+		friend class SQLite3DB;
+
 		const std::string name;
 		const DataType data_type;
 		const bool allow_null;
@@ -49,19 +38,24 @@ public:
 		const KeyType key_type;
 		const std::string foreign_key_table, foreign_key_name;
 
+		std::string definition_sql() const;
+		std::string constraint_sql() const;
+
 	public:
 
 		Column(const std::string& name, DataType data_type = DataType::TEXT,
 				bool allow_null = false, bool unique = false,
 				KeyType key_type = KeyType::NONE,
 				const std::string& foreign_key_table = "", const std::string& foreign_key_name = "");
-
-		operator std::string() const;
 	};
 
 	class ConstraintComposite {
+		friend class SQLite3DB;
+
 		const std::vector<std::string> columns;
 		KeyType key_type = KeyType::NONE;
+
+		std::string to_sql() const;
 
 	public:
 		template<typename ... ColumnNames,
@@ -77,8 +71,6 @@ public:
 				ConstraintComposite(columns ...) {
 			this->key_type = key_type;
 		}
-
-		operator std::string() const;
 	};
 
 private:
@@ -92,7 +84,7 @@ private:
 	void exec(const std::string& sql);
 
 	void create_with_constraints(std::string_view table_name, const std::vector<Column>& columns,
-			std::string_view constraint_clauses);
+			const std::string& constraint_clauses);
 
 public:
 	SQLite3DB(const std::string& database_file);
@@ -102,9 +94,9 @@ public:
 			std::is_same<ConstraintCompositeT, ConstraintComposite> ...>
 	> create(std::string_view table_name, const std::vector<Column>& columns,
 			const ConstraintCompositeT& ... unique_sets) {
-		std::string constraint_clauses;
-		concat_list(constraint_clauses, std::vector<ConstraintComposite> { unique_sets ... });
-		create_with_constraints(table_name, columns, constraint_clauses);
+		std::vector<std::string> constraints_sql { unique_sets.to_sql() ... };
+		create_with_constraints(table_name, columns,
+				helper::interleave(constraints_sql.begin(), constraints_sql.end(), ""));
 	}
 
 	void insert(std::string_view table_name,

@@ -29,19 +29,24 @@ SQLite3DB::Column::Column(const std::string& name,
 		foreign_key_table(foreign_key_table), foreign_key_name(foreign_key_name) {
 }
 
-SQLite3DB::Column::operator std::string() const {
+std::string SQLite3DB::Column::definition_sql() const {
 	std::string sql;
 	sql += name + " " + to_sql(data_type)
 		+ (key_type == KeyType::PRIMARY ? " PRIMARY KEY" : "")
-		+ (allow_null ? " NOT NULL" : "")
-		+ (unique && key_type != KeyType::PRIMARY ? " UNIQUE" : "")
-		+ (key_type == KeyType::FOREIGN ? ", FOREIGN KEY(" + name + ") REFERENCES "
-			+ foreign_key_table + "("
-			+ (foreign_key_name.empty() ? name : foreign_key_name) + ") ON DELETE CASCADE" : "");
+		+ (allow_null ? "" : " NOT NULL")
+		+ (unique && key_type != KeyType::PRIMARY ? " UNIQUE" : "");
 	return sql;
 }
 
-SQLite3DB::ConstraintComposite::operator std::string() const {
+std::string SQLite3DB::Column::constraint_sql() const {
+	return (key_type == KeyType::FOREIGN ?
+		", FOREIGN KEY(" + name + ") REFERENCES "
+			+ foreign_key_table + "("
+			+ (foreign_key_name.empty() ? name : foreign_key_name)
+			+ ") ON DELETE CASCADE" : "");
+}
+
+std::string SQLite3DB::ConstraintComposite::to_sql() const {
 	std::string sql;
 	sql += ", ";
 	switch (key_type) {
@@ -54,20 +59,23 @@ SQLite3DB::ConstraintComposite::operator std::string() const {
 		default:
 			throw std::runtime_error("invalid key constraint");
 	}
-	sql += "(";
-	concat_list(sql, columns);
-	sql += ")";
+	sql += "(" + helper::interleave(columns.begin(), columns.end(), ",") + ")";
 	return sql;
 }
 
 void SQLite3DB::create_with_constraints(std::string_view table_name, const std::vector<Column>& columns,
-		std::string_view constraint_clauses) {
+		const std::string& constraint_clauses) {
 	std::string sql("CREATE TABLE ");
 	sql += table_name;
-	sql += "(";
-	concat_list(sql, columns);
-	sql += constraint_clauses;
-	sql += ");";
+	sql += "("
+		+ helper::interleave(columns.begin(), columns.end(), ", ", [](const Column& col) {
+			return col.definition_sql();
+		})
+		+ helper::interleave(columns.begin(), columns.end(), "", [](const Column& col) {
+			return col.constraint_sql();
+		})
+		+ constraint_clauses + ");";
+	sqlite3db_logger(0) << "constaint composites: " << constraint_clauses << std::endl;
 
 	exec(sql);
 }
@@ -77,11 +85,15 @@ void SQLite3DB::insert(const std::string_view table_name,
 		const std::vector<std::string_view>& data) {
 	std::string sql("INSERT INTO ");
 	sql += table_name;
-	sql += " (";
-	concat_list(sql, columns);
-	sql += ") VALUES(";
-	concat_list(sql, data, ",", "\"", "\"");
-	sql += ");";
+	sql += " ("
+		+ helper::interleave(columns.begin(), columns.end(), ",", [](const std::string_view& sv) {
+			return std::string(sv);
+		})
+		+ ") VALUES("
+		+ helper::interleave(data.begin(), data.end(), ",", [](const std::string_view& sv) {
+			return std::string(sv);
+		}, "\"", "\"")
+		+ ");";
 
 	exec(sql);
 }
