@@ -7,7 +7,7 @@
 
 namespace shimiyuu {
 
-SYLogger<int> sqlite3db_logger(1, std::cout);
+SYLogger<int> sqlite3db_logger(2, std::cerr);
 
 SQLite3DB::SQLite3DB(const std::string& database_file) {
 	sqlite3* db;
