@@ -60,14 +60,13 @@ public:
 	}
 
 	/** set the log level of the logger
-	 *	@return true if the level was set, false otherwise (when the level has no associated log)
+	 * @throw	runtime_error if the level is not defined
 	 */
-	bool level(const LogLevelT& level) {
-		if (const auto it = m_logs.find(level); it != m_logs.end()) {
+	void level(const LogLevelT& level) {
+		if (const auto it = m_logs.find(level); it != m_logs.end())
 			m_level = &it->first;
-			return true;
-		} else
-			return false;
+		else
+			throw std::runtime_error("log level not defined");
 	}
 
 	/**
