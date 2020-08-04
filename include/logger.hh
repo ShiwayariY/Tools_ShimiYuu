@@ -78,9 +78,11 @@ public:
 
 	/**
 	 * Add a log level or change the stream of an existing one and enable it
+	 * @param active	when true, set the log level to level
 	 */
-	void level(const LogLevelT& level, std::ostream& log) {
-		m_logs[level] = { true, &log };
+	void level(const LogLevelT& level, std::ostream& log, bool active = false) {
+		auto it = m_logs.insert( { level, { true, &log } }).first;
+		if (active) m_level = &it->first;
 	}
 
 	/**
