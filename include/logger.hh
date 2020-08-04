@@ -4,6 +4,9 @@
 #include <initializer_list>
 #include <type_traits>
 #include <utility>
+#include <string>
+#include <chrono>
+#include <ctime>
 
 #ifndef INCLUDE_SHIMIYUU_LOGGER_HH_
 #define INCLUDE_SHIMIYUU_LOGGER_HH_
@@ -15,6 +18,7 @@ class SYLoggerRelay {
 	std::ostream* os;
 
 public:
+
 	SYLoggerRelay(std::ostream* os) : os(os) {
 	}
 
@@ -48,7 +52,7 @@ public:
 	 * 			is disabled, or is less than the current log level. Otherwise, output is written
 	 * 			to the stream associated to level.
 	 */
-	SYLoggerRelay operator()(const LogLevelT& level) {
+	SYLoggerRelay operator()(const LogLevelT& level) const {
 		std::ostream* log = nullptr;
 		if (level >= *m_level) {
 			if (const auto it = m_logs.find(level); it != m_logs.end()) {
@@ -88,7 +92,7 @@ public:
 	/**
 	 *  @return the status of a log level or false if it doesn't exist
 	 */
-	bool enabled(const LogLevelT& level) {
+	bool enabled(const LogLevelT& level) const {
 		if (const auto it = m_logs.find(level); it != m_logs.end())
 			return it->second.first;
 		else
