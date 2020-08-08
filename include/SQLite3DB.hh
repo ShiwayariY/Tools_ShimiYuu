@@ -100,12 +100,11 @@ public:
 	}
 
 	void insert(std::string_view table_name,
-			const std::vector<std::string_view>& columns,
-			const std::vector<std::string_view>& data);
+			const std::vector<std::pair<std::string, std::string> >& column_data);
 
-	void remove(std::string_view table_name,
-			std::string_view column,
-			std::string_view value);
+	void update(std::string_view table_name,
+			const std::vector<std::pair<std::string, std::string> > new_column_data,
+			const std::vector<std::pair<std::string, std::string> > column_data_conditions);
 
 	static Column default_key(const std::string& name);
 

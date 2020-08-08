@@ -81,31 +81,36 @@ void SQLite3DB::create_with_constraints(std::string_view table_name, const std::
 }
 
 void SQLite3DB::insert(const std::string_view table_name,
-		const std::vector<std::string_view>& columns,
-		const std::vector<std::string_view>& data) {
+		const std::vector<std::pair<std::string, std::string> >& column_data) {
 	std::string sql("INSERT INTO ");
 	sql += table_name;
 	sql += " ("
-		+ helper::interleave(columns.begin(), columns.end(), ",", [](const std::string_view& sv) {
-			return std::string(sv);
+		+ helper::interleave(column_data.begin(), column_data.end(), ",", [](const auto& p) {
+			return p.first;
 		})
 		+ ") VALUES("
-		+ helper::interleave(data.begin(), data.end(), ",", [](const std::string_view& sv) {
-			return std::string(sv);
+		+ helper::interleave(column_data.begin(), column_data.end(), ",", [](const auto& p) {
+			return p.second;
 		}, "\"", "\"")
 		+ ");";
 
 	exec(sql);
 }
 
-void SQLite3DB::remove(std::string_view table_name, std::string_view column, std::string_view value) {
-	std::string sql("DELETE FROM ");
+void SQLite3DB::update(std::string_view table_name,
+		const std::vector<std::pair<std::string, std::string> > new_column_data,
+		const std::vector<std::pair<std::string, std::string> > column_data_conditions) {
+	std::string sql("UPDATE ");
 	sql += table_name;
-	sql += "WHERE";
-	sql += column;
-	sql += " = \"";
-	sql += value;
-	sql += "\";";
+	sql += " SET "
+		+ helper::interleave(new_column_data.begin(), new_column_data.end(), ", ", [](const auto& p) {
+			return p.first + " = \"" + p.second + "\"";
+		})
+		+ " WHERE "
+		+ helper::interleave(column_data_conditions.begin(), column_data_conditions.end(), " AND ", [](const auto& p) {
+			return p.first + " = \"" + p.second + "\"";
+		}) + ";";
+
 	exec(sql);
 }
 
