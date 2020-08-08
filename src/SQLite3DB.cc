@@ -140,4 +140,16 @@ void SQLite3DB::exec(const std::string& sql) {
 	}
 }
 
+SQLite3DB::Transaction::Transaction(SQLite3DB& db) : m_db(db) {
+	m_db.exec("BEGIN");
+}
+
+SQLite3DB::Transaction::~Transaction() {
+	m_db.exec("COMMIT");
+}
+
+SQLite3DB::Transaction SQLite3DB::start_transaction() {
+	return Transaction(*this);
+}
+
 }

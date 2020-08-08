@@ -79,6 +79,13 @@ private:
 	};
 	std::unique_ptr<sqlite3, sqlite3Deleter> m_db;
 
+	class Transaction {
+		SQLite3DB& m_db;
+	public:
+		Transaction(SQLite3DB& db);
+		~Transaction();
+	};
+
 	static std::string to_sql(DataType data_type);
 
 	void exec(const std::string& sql);
@@ -98,6 +105,8 @@ public:
 		create_with_constraints(table_name, columns,
 				helper::interleave(constraints_sql.begin(), constraints_sql.end(), ""));
 	}
+
+	Transaction start_transaction();
 
 	void insert(std::string_view table_name,
 			const std::vector<std::pair<std::string, std::string> >& column_data);
