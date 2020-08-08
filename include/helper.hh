@@ -1,6 +1,6 @@
 #include <string>
-#include <string_view>
 #include <iterator>
+#include <sstream>
 
 #ifndef INCLUDE_SHIMIYUU_HELPER_HH_
 #define INCLUDE_SHIMIYUU_HELPER_HH_
@@ -8,6 +8,10 @@
 namespace shimiyuu::helper {
 
 std::string sanitize_windows_filename(const std::string& filename);
+
+bool is_valid_date(int d, int m, int y);
+
+bool is_valid_date(std::string_view date);
 
 template<typename IterT>
 std::string interleave(IterT begin, IterT end, std::string delim = ", ",
