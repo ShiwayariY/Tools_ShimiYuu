@@ -1,4 +1,5 @@
 #include <regex>
+#include <fstream>
 
 #include <helper.hh>
 
@@ -7,6 +8,30 @@ namespace shimiyuu::helper {
 std::string sanitize_windows_filename(const std::string& filename) {
 	static const std::regex BAD_CHAR_REGEX(R"(\\|/|:|\*|\?|"|<|>|\|)");
 	return std::regex_replace(filename, BAD_CHAR_REGEX, " ");
+}
+
+bool file_exists(const std::string& filename) {
+	std::ifstream ifs(filename);
+	return ifs.is_open();
+}
+
+std::filesystem::path next_unused_filepath(
+		const std::filesystem::path& start_path,
+		const std::string& suffix_sep) {
+	if (!start_path.has_filename()) throw std::invalid_argument("not a filepath");
+
+	const auto parent_dir = start_path.parent_path();
+	const auto stem = start_path.stem();
+	const auto ext = start_path.extension();
+
+	auto next_filename = start_path.filename();
+	for (int counter = 1; file_exists((parent_dir / next_filename).string()); ++counter) {
+		next_filename = stem;
+		next_filename += suffix_sep + std::to_string(counter);
+		next_filename += ext;
+	}
+
+	return parent_dir / next_filename;
 }
 
 bool is_valid_date(int d, int m, int y) {

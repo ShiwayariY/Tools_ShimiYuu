@@ -1,6 +1,7 @@
 #include <string>
 #include <iterator>
 #include <sstream>
+#include <filesystem>
 
 #ifndef INCLUDE_SHIMIYUU_HELPER_HH_
 #define INCLUDE_SHIMIYUU_HELPER_HH_
@@ -8,6 +9,12 @@
 namespace shimiyuu::helper {
 
 std::string sanitize_windows_filename(const std::string& filename);
+
+bool file_exists(const std::string& filename);
+
+std::filesystem::path next_unused_filepath(
+		const std::filesystem::path& start_path,
+		const std::string& suffix_sep = "_");
 
 bool is_valid_date(int d, int m, int y);
 
