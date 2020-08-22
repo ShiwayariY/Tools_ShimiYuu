@@ -40,9 +40,9 @@ std::string interleave(IterT begin, IterT end, std::string delim = ", ",
 	return ret;
 }
 
-template<typename Container, typename ... Containers>
+template<typename T, typename ... S>
 void apply_permutation(const std::vector<std::size_t>& permutation,
-		Container& to_sort, Containers& ... rest) {
+		std::vector<T>& to_sort, std::vector<S>& ... rest) {
 
 	std::vector<bool> done(to_sort.size());
 	for (size_t i = 0; i < to_sort.size(); ++i) {
@@ -51,10 +51,8 @@ void apply_permutation(const std::vector<std::size_t>& permutation,
 		std::size_t prev = i;
 		std::size_t curr = permutation[i];
 		while (i != curr) {
-			std::swap(*std::next(to_sort.begin(), prev), *std::next(to_sort.begin(), curr));
-//			std::swap(to_sort[prev], to_sort[curr]);
-			(std::swap(*std::next(rest.begin(), prev), *std::next(rest.begin(), curr)), ...);
-//			(std::swap(rest[prev], rest[curr]), ...);
+			std::swap(to_sort[prev], to_sort[curr]);
+			(std::swap(rest[prev], rest[curr]), ...);
 			done[curr] = true;
 			prev = curr;
 			curr = permutation[curr];
@@ -62,16 +60,16 @@ void apply_permutation(const std::vector<std::size_t>& permutation,
 	}
 }
 
-template<typename Container, typename Compare, typename ... Containers>
-void sort_according_to(const Container& reference, Compare compare, Containers& ... to_sort) {
+template<typename T, typename Compare, typename ... S>
+void sort_according_to(const std::vector<T>& reference, Compare compare, std::vector<S>& ... to_sort) {
 
 	std::vector<std::size_t> sort_permutation(reference.size());
 	std::iota(sort_permutation.begin(), sort_permutation.end(), 0);
 	std::sort(sort_permutation.begin(), sort_permutation.end(),
 			[&](std::size_t i, std::size_t j) {
 				return compare(
-						*std::next(reference.begin(), i),
-						*std::next(reference.begin(), j));
+						reference[i],
+						reference[j]);
 			});
 	apply_permutation(sort_permutation, to_sort ...);
 }
