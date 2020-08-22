@@ -35,15 +35,18 @@ std::filesystem::path next_unused_filepath(
 }
 
 bool is_valid_date(int d, int m, int y) {
-	if(y < 0 || m < 1 || m > 12 || d < 1) return false;
+	if (y < 0 || m < 1 || m > 12 || d < 1) return false;
 	const bool leap = (((y % 4 == 0) && (y % 100 != 0)) || (y % 400 == 0));
 	switch (m) {
 		case 2:
 			return d <= (leap ? 29 : 28);
 			break;
 		case 4:
+
 		case 6:
+
 		case 9:
+
 		case 11:
 			return d <= 30;
 			break;
