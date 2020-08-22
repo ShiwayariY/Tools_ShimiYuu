@@ -10,6 +10,8 @@
 
 namespace shimiyuu::helper {
 
+std::string timestamp();
+
 std::string sanitize_windows_filename(const std::string& filename);
 
 bool file_exists(const std::string& filename);

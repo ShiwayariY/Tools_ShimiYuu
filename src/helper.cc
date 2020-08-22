@@ -1,9 +1,23 @@
-#include <regex>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 #include <fstream>
+#include <regex>
 
 #include <helper.hh>
 
 namespace shimiyuu::helper {
+
+std::string timestamp() {
+	const auto now = std::chrono::system_clock::now();
+	const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+	const auto now_t = std::chrono::system_clock::to_time_t(now);
+	const std::tm now_tm = *std::localtime(&now_t);
+	std::ostringstream oss;
+	oss << std::put_time(&now_tm, "%H:%M:%S") << '.' << std::setfill('0') << std::setw(3) << ms.count();
+	return oss.str();
+}
 
 std::string sanitize_windows_filename(const std::string& filename) {
 	static const std::regex BAD_CHAR_REGEX(R"(\\|/|:|\*|\?|"|<|>|\|)");
