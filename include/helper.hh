@@ -3,6 +3,7 @@
 #include <sstream>
 #include <filesystem>
 #include <numeric>
+#include <algorithm>
 
 #ifndef INCLUDE_SHIMIYUU_HELPER_HH_
 #define INCLUDE_SHIMIYUU_HELPER_HH_
