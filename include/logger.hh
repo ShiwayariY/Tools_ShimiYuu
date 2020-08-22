@@ -8,6 +8,8 @@
 #include <chrono>
 #include <ctime>
 
+#include <helper.hh>
+
 #ifndef INCLUDE_SHIMIYUU_LOGGER_HH_
 #define INCLUDE_SHIMIYUU_LOGGER_HH_
 
@@ -20,6 +22,7 @@ class SYLoggerRelay {
 public:
 
 	SYLoggerRelay(std::ostream* os) : os(os) {
+		if (os) *os << "[" << helper::timestamp() << "] ";
 	}
 
 	template<typename MessageT>
