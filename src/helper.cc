@@ -20,8 +20,10 @@ std::string timestamp() {
 }
 
 std::string sanitize_windows_filename(const std::string& filename) {
+	static const std::regex TRIM_CHARS_REGEX("^[ .]*|[ .]*$");
 	static const std::regex BAD_CHAR_REGEX(R"(\\|/|:|\*|\?|"|<|>|\|)");
-	return std::regex_replace(filename, BAD_CHAR_REGEX, " ");
+	const auto trimmed = std::regex_replace(filename, TRIM_CHARS_REGEX, "");
+	return std::regex_replace(trimmed, BAD_CHAR_REGEX, " ");
 }
 
 bool file_exists(const std::string& filename) {
