@@ -45,6 +45,9 @@ std::string interleave(IterT begin, IterT end, std::string delim = ", ",
 template<typename T, typename ... S>
 void apply_permutation(const std::vector<std::size_t>& permutation,
 		std::vector<T>& to_sort, std::vector<S>& ... rest) {
+	if (!(to_sort.size() == permutation.size()
+			&& ((rest.size() == permutation.size()) && ...)
+	)) throw std::runtime_error("apply_permutation(.. sizes do not match");
 
 	std::vector<bool> done(to_sort.size());
 	for (size_t i = 0; i < to_sort.size(); ++i) {
