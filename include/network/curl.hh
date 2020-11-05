@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <ostream>
+#include <map>
 
 #include <curl/curl.h>
 
@@ -37,8 +38,8 @@ private:
 		~Global();
 	};
 
-	static size_t write_string(void* chunk, size_t size, size_t nmemb, void* buf);
-	static size_t write_to_stream(void* chunk, size_t size, size_t nmemb, void* buf);
+	static std::size_t write_string(void* chunk, size_t size, size_t nmemb, void* buf);
+	static std::size_t write_to_stream(void* chunk, size_t size, size_t nmemb, void* buf);
 
 	CURL* m_handle;
 };
