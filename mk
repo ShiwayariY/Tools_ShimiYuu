@@ -1,6 +1,6 @@
 #!/bin/bash
 
-depends_template="\
+export depends_template="\
 " #Dependency_ROOT=
 
 mk_target $@
