@@ -10,6 +10,7 @@ Curl::Curl() {
 	m_handle = curl_easy_init();
 	curl_easy_setopt(m_handle, CURLOPT_COOKIEFILE, "");
 	curl_easy_setopt(m_handle, CURLOPT_FOLLOWLOCATION, 1L);
+	curl_easy_setopt(m_handle, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:82.0) Gecko/20100101 Firefox/82.0");
 }
 
 Curl::~Curl() {
