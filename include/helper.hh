@@ -12,7 +12,28 @@ namespace shimiyuu::helper {
 
 std::string timestamp();
 
-std::string sanitize_windows_filename(const std::string& filename);
+template<typename Predicate>
+void trim_left(std::string& s, Predicate p) {
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [&](char c) {
+		return !p(c);
+	}));
+}
+template<typename Predicate>
+void trim_right(std::string& s, Predicate p) {
+	s.erase(std::find_if(s.rbegin(), s.rend(), [&](char c) {
+		return !p(c);
+	}).base(), s.end());
+}
+template<typename Predicate>
+void trim(std::string& s, Predicate p) {
+	trim_left(s, p);
+	trim_right(s, p);
+}
+void trim_left(std::string& s);
+void trim_right(std::string& s);
+void trim(std::string& s);
+
+std::string sanitize_windows_filename(std::string filename);
 
 bool file_exists(const std::string& filename);
 

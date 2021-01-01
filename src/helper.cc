@@ -4,6 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include <regex>
+#include <set>
 
 #include <helper.hh>
 
@@ -19,11 +20,25 @@ std::string timestamp() {
 	return oss.str();
 }
 
-std::string sanitize_windows_filename(const std::string& filename) {
-	static const std::regex TRIM_CHARS_REGEX("^[ .]*|[ .]*$");
-	static const std::regex BAD_CHAR_REGEX(R"(\\|/|:|\*|\?|"|<|>|\|)");
-	const auto trimmed = std::regex_replace(filename, TRIM_CHARS_REGEX, "");
-	return std::regex_replace(trimmed, BAD_CHAR_REGEX, " ");
+void trim_left(std::string& s) {
+	trim_left(s, static_cast<int (*)(int)>(std::isspace));
+}
+void trim_right(std::string& s) {
+	trim_right(s, static_cast<int (*)(int)>(std::isspace));
+}
+void trim(std::string& s) {
+	trim(s, static_cast<int (*)(int)>(std::isspace));
+}
+
+std::string sanitize_windows_filename(std::string filename) {
+	static const std::set<char> BAD_CHARS { '\\', '/', ':', '*', '?', '"', '<', '>', '|' };
+	trim(filename, [](char c) {
+		return std::isspace(c) || c == '.';
+	});
+	std::erase_if(filename, [](char c) {
+		return BAD_CHARS.contains(c) || c < 32;
+	});
+	return filename;
 }
 
 bool file_exists(const std::string& filename) {
