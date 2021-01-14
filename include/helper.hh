@@ -1,4 +1,5 @@
 #include <string>
+#include <string_view>
 #include <iterator>
 #include <sstream>
 #include <filesystem>
@@ -23,6 +24,8 @@ bool file_exists(const std::string& filename);
 std::filesystem::path next_unused_filepath(
 		const std::filesystem::path& start_path,
 		const std::string& suffix_sep = "_");
+
+std::vector<std::string> split(std::string_view s, char delim, bool allow_empty = false);
 
 template<typename Predicate> void trim_left(std::string& s, Predicate p);
 void trim_left(std::string& s);

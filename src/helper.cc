@@ -99,4 +99,34 @@ bool is_valid_date(std::string_view date) {
 	return is_valid_date(d, m, y);
 }
 
+std::vector<std::string> split(std::string_view s, char delim, bool allow_empty) {
+	std::vector<std::string> tokens;
+	std::vector<std::string>::pointer tk;
+	bool new_tk = true;
+
+	if (allow_empty) {
+		tk = &tokens.emplace_back("");
+		new_tk = false;
+	}
+
+	for (const char c : s) {
+		if (c == delim) {
+			if (allow_empty && new_tk)
+				tk = &tokens.emplace_back("");
+			new_tk = true;
+		} else {
+			if (new_tk) {
+				new_tk = false;
+				tk = &tokens.emplace_back(std::string { c });
+			} else
+				*tk += c;
+		}
+	}
+
+	if (allow_empty && new_tk)
+		tokens.emplace_back("");
+
+	return tokens;
+}
+
 }
