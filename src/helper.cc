@@ -32,11 +32,11 @@ void trim(std::string& s) {
 
 std::string sanitize_windows_filename(std::string filename) {
 	static const std::set<char> BAD_CHARS { '\\', '/', ':', '*', '?', '"', '<', '>', '|' };
+	std::erase_if(filename, [](unsigned char c) {
+		return BAD_CHARS.contains(c) || c < 32;
+	});
 	trim(filename, [](char c) {
 		return std::isspace(c) || c == '.';
-	});
-	std::erase_if(filename, [](char c) {
-		return BAD_CHARS.contains(c) || c < 32;
 	});
 	return filename;
 }
