@@ -81,6 +81,7 @@ private:
 
 	class Transaction {
 		SQLite3DB& m_db;
+
 	public:
 		Transaction(SQLite3DB& db);
 		~Transaction();
@@ -106,7 +107,7 @@ public:
 				helper::interleave(constraints_sql.begin(), constraints_sql.end(), ""));
 	}
 
-	Transaction start_transaction();
+	[[nodiscard]] Transaction start_transaction();
 
 	void insert(std::string_view table_name,
 			const std::vector<std::pair<std::string, std::string> >& column_data);
