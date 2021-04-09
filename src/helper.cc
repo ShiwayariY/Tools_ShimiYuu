@@ -1,7 +1,6 @@
 #include <chrono>
 #include <ctime>
 #include <iomanip>
-#include <sstream>
 #include <fstream>
 #include <regex>
 #include <set>
@@ -127,6 +126,76 @@ std::vector<std::string> split(std::string_view s, char delim, bool allow_empty)
 		tokens.emplace_back("");
 
 	return tokens;
+}
+
+Timestamp::Timestamp() :
+		ms { 0 } {
+}
+
+Timestamp::Timestamp(const Timestamp& other) :
+		ms { other.ms } {
+}
+
+Timestamp::Timestamp(unsigned hours, unsigned minutes, unsigned seconds, unsigned milliseconds) :
+		ms { milliseconds } {
+	ms += std::chrono::seconds { seconds } + std::chrono::minutes { minutes } + std::chrono::hours { hours };
+}
+
+Timestamp::Timestamp(const std::string& timestamp) {
+	std::regex timestamp_regex { R"(([0-9]+):([0-5][0-9]):([0-5][0-9])(?:[.]([0-9]{3}))?)" };
+	std::smatch timestamp_match;
+	if (std::regex_match(timestamp, timestamp_match, timestamp_regex)) {
+		try {
+			ms = std::chrono::milliseconds { std::stoi(timestamp_match.str(4)) };
+		} catch (...) {
+			ms = std::chrono::milliseconds { 0 };
+		}
+		ms += std::chrono::hours { std::stoi(timestamp_match.str(1)) }
+			+ std::chrono::minutes { std::stoi(timestamp_match.str(2)) }
+			+ std::chrono::seconds { std::stoi(timestamp_match.str(3)) };
+	} else
+		throw std::invalid_argument { "invalid Timestamp" };
+}
+
+Timestamp Timestamp::operator+(const Timestamp& other) const {
+	Timestamp sum { *this };
+	sum.ms += other.ms;
+	return sum;
+}
+
+Timestamp Timestamp::operator-(const Timestamp& other) const {
+	if (ms >= other.ms) {
+		Timestamp diff { *this };
+		diff.ms -= other.ms;
+		return diff;
+	} else
+		throw std::runtime_error("Timestamp::operator-(... result must be >= 0");
+}
+
+template<typename Duration> int Timestamp::count() const {
+	return std::chrono::duration_cast<Duration>(ms).count();
+}
+
+Timestamp::operator std::string() const {
+	auto rest = ms;
+	const auto hours = duration_cast<std::chrono::hours>(rest);
+	rest -= hours;
+	const auto minutes = duration_cast<std::chrono::minutes>(rest);
+	rest -= minutes;
+	const auto seconds = duration_cast<std::chrono::seconds>(rest);
+	rest -= seconds;
+	std::ostringstream timestamp_oss;
+	timestamp_oss << std::setfill('0')
+		<< std::setw(2) << hours.count()
+		<< ":" << std::setw(2) << minutes.count()
+		<< ":" << std::setw(2) << seconds.count()
+		<< "." << std::setw(3) << rest.count();
+	return timestamp_oss.str();
+}
+
+std::ostream& operator<<(std::ostream& os, const Timestamp& timestamp) {
+	os << timestamp.operator std::string();
+	return os;
 }
 
 }

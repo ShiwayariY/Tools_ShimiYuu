@@ -27,6 +27,24 @@ std::filesystem::path next_unused_filepath(
 
 std::vector<std::string> split(std::string_view s, char delim, bool allow_empty = false);
 
+class Timestamp {
+	std::chrono::milliseconds ms;
+
+public:
+	Timestamp();
+	Timestamp(const Timestamp&);
+	Timestamp(unsigned hours, unsigned minutes, unsigned seconds, unsigned milliseconds);
+	Timestamp(const std::string&);
+
+	Timestamp operator+(const Timestamp&) const;
+	Timestamp operator-(const Timestamp&) const;
+
+	template<typename Duration = std::chrono::milliseconds> int count() const;
+	operator std::string() const;
+	friend std::ostream& operator<<(std::ostream&, const Timestamp&);
+};
+std::ostream& operator<<(std::ostream&, const Timestamp&);
+
 template<typename Predicate> void trim_left(std::string& s, Predicate p);
 void trim_left(std::string& s);
 template<typename Predicate> void trim_right(std::string& s, Predicate p);
