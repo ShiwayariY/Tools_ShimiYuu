@@ -145,6 +145,7 @@ SQLite3DB::Transaction::Transaction(SQLite3DB& db) : m_db(db) {
 }
 
 SQLite3DB::Transaction::~Transaction() {
+	// Must end SQLite transaction even on query error <- guaranteed on exception by RAII
 	m_db.exec("COMMIT");
 }
 
