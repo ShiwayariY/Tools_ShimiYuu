@@ -1,4 +1,5 @@
 #include <string>
+#include <fstream>
 #include <mutex>
 #include <memory>
 #include <stdexcept>
@@ -55,7 +56,7 @@ public:
 	}
 };
 
-std::mutex TempFile::m_mtx;
+inline std::mutex TempFile::m_mtx;
 
 }
 
