@@ -21,6 +21,7 @@ public:
 
 	void set_cookies(const std::string& cookies) const;
 	void set_referer(const std::string& referer) const;
+	void set_headers(const std::vector<std::string>& headers = { });
 
 	std::string get_string(const std::string& url) const;
 	std::string post(const std::string& url, const std::map<std::string, std::string>& data) const;
@@ -41,7 +42,10 @@ private:
 	static std::size_t write_string(void* chunk, size_t size, size_t nmemb, void* buf);
 	static std::size_t write_to_stream(void* chunk, size_t size, size_t nmemb, void* buf);
 
+	void reset_headers();
+
 	CURL* m_handle;
+	curl_slist* m_current_headers = nullptr; // libcurl does not copy entries > list must live until headers are reset
 };
 
 }

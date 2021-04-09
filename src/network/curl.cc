@@ -14,6 +14,7 @@ Curl::Curl() {
 }
 
 Curl::~Curl() {
+	reset_headers();
 	curl_easy_cleanup(m_handle);
 }
 
@@ -23,6 +24,18 @@ void Curl::set_cookies(const std::string& cookies) const {
 
 void Curl::set_referer(const std::string& referer) const {
 	curl_easy_setopt(m_handle, CURLOPT_REFERER, referer.c_str());
+}
+
+void Curl::set_headers(const std::vector<std::string>& headers) {
+	if (headers.empty()) {
+		reset_headers();
+		return;
+	}
+
+	for (const std::string& header : headers)
+		m_current_headers = curl_slist_append(m_current_headers, header.c_str());
+
+	curl_easy_setopt(m_handle, CURLOPT_HTTPHEADER, m_current_headers);
 }
 
 std::string Curl::get_string(const std::string& url) const {
@@ -90,6 +103,14 @@ size_t Curl::write_to_stream(void* chunk, size_t size, size_t nmemb, void* buf) 
 	const size_t realsize = size * nmemb;
 	static_cast<std::ostream*>(buf)->write(static_cast<char*>(chunk), realsize);
 	return realsize;
+}
+
+void Curl::reset_headers() {
+	curl_easy_setopt(m_handle, CURLOPT_HTTPHEADER, NULL);
+	if (m_current_headers) {
+		curl_slist_free_all(m_current_headers);
+		m_current_headers = nullptr;
+	}
 }
 
 }
